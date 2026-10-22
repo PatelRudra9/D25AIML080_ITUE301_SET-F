@@ -17,4 +17,14 @@ React frontend for the ITUE301 practical examination: Login, Events, My Tickets,
 - The Organizer Panel is lazy-loaded. The Events page uses state for the selected event and ticket quantity in its booking form.
 - The sign-in page uses demo-only local auth state; replace this with the API response in a later task.
 
-Backend and MongoDB setup instructions will be added with their corresponding tasks.
+## Backend and MongoDB setup
+
+1. Install MongoDB locally, or create a MongoDB Atlas database.
+2. Copy `.env.example` to `.env`, then set `MONGODB_URI` and a private, random `JWT_SECRET`.
+3. Run `npm run seed` once to add a demo attendee and event to the database.
+4. Start the API with `npm start` (equivalent to `node backend/server.js`). It listens on port 5000 by default.
+5. The REST API is mounted at `/api/v1`; event listing is public and ticket endpoints require `Authorization: Bearer <token>`.
+
+The demo login email is `demo@eventhub.local`. `npm run seed` prints the sample event id for booking requests.
+
+The `.env` file is ignored by Git; only `.env.example` should be committed.
