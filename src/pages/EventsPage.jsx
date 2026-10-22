@@ -1,20 +1,59 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import EventCard from '../components/EventCard.jsx';
 
-const events = [
-  { id: 1, title: 'Neon Nights: Live in Concert', category: 'Music', date: 'Nov 14, 2026', venue: 'Riverfront Arena', ticketsAvailable: 124 },
-  { id: 2, title: 'The Makers Market', category: 'Community', date: 'Nov 21, 2026', venue: 'Old Mill Courtyard', ticketsAvailable: 38 },
-  { id: 3, title: 'City Lights Film Festival', category: 'Film', date: 'Dec 02, 2026', venue: 'Grand Picture House', ticketsAvailable: 0 },
-];
+const API_URL = 'http://localhost:5000/api/v1/events';
+
+function formatEventDate(date) {
+  const parsedDate = new Date(date);
+  return Number.isNaN(parsedDate.getTime())
+    ? date
+    : parsedDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
 
 export default function EventsPage() {
-  const [selectedEvent, setSelectedEvent] = useState(String(events[0].id));
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedEvent, setSelectedEvent] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [bookingMessage, setBookingMessage] = useState('');
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadEvents() {
+      try {
+        setLoading(true);
+        setError('');
+        const response = await fetch(API_URL, { signal: controller.signal });
+        if (!response.ok) throw new Error(`Events request failed (${response.status}).`);
+
+        const data = await response.json();
+        if (!Array.isArray(data.events)) throw new Error('The events API returned an invalid response.');
+        setEvents(data.events);
+        setSelectedEvent((current) => current || data.events.find((event) => event.ticketsAvailable > 0)?._id || '');
+      } catch (requestError) {
+        if (requestError.name !== 'AbortError') {
+          setError(requestError.message || 'Unable to load events. Please try again.');
+        }
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    }
+
+    loadEvents();
+    return () => controller.abort();
+  }, []);
+
+  const filteredEvents = events.filter((event) =>
+    event.title.toLowerCase().includes(searchTerm.trim().toLowerCase()),
+  );
+
   function handleBooking(event) {
     event.preventDefault();
-    const eventTitle = events.find((item) => String(item.id) === selectedEvent)?.title;
+    const eventTitle = events.find((item) => item._id === selectedEvent)?.title;
+    if (!eventTitle) return;
     setBookingMessage(`Your request for ${quantity} ticket(s) to ${eventTitle} is ready.`);
   }
 
@@ -26,40 +65,63 @@ export default function EventsPage() {
           <h1>Events worth showing up for</h1>
           <p>Find your people, discover something new, and make a night of it.</p>
         </div>
-        <span className="event-count">{events.length} upcoming events</span>
+        {!loading && !error && <span className="event-count">{filteredEvents.length} events</span>}
       </div>
-      <div className="event-grid">
-        {events.map((event) => (
-          <EventCard
-            key={event.id}
-            {...event}
-            onBook={() => {
-              if (event.ticketsAvailable > 0) {
-                setSelectedEvent(String(event.id));
-                setBookingMessage('');
-              }
-            }}
-          />
-        ))}
-      </div>
-      <form className="booking-form" onSubmit={handleBooking}>
-        <div>
-          <span className="eyebrow">QUICK BOOKING</span>
-          <h2>Reserve your tickets</h2>
-        </div>
-        <label htmlFor="selected-event">Selected event</label>
-        <select id="selected-event" value={selectedEvent} onChange={(event) => setSelectedEvent(event.target.value)}>
-          {events.map((event) => (
-            <option key={event.id} value={event.id} disabled={event.ticketsAvailable === 0}>
-              {event.title}{event.ticketsAvailable === 0 ? ' (Sold Out)' : ''}
-            </option>
+
+      <label className="event-search-label" htmlFor="event-search">Search events by title</label>
+      <input
+        id="event-search"
+        className="event-search"
+        type="search"
+        placeholder="Try “concert”"
+        value={searchTerm}
+        onChange={(event) => setSearchTerm(event.target.value)}
+      />
+
+      {loading && <p className="api-state" role="status">Loading events…</p>}
+      {!loading && error && <p className="api-state api-error" role="alert">Could not load events: {error}</p>}
+      {!loading && !error && filteredEvents.length === 0 && (
+        <p className="api-state">{events.length ? 'No events match your search.' : 'No events are available right now.'}</p>
+      )}
+      {!loading && !error && filteredEvents.length > 0 && (
+        <div className="event-grid">
+          {filteredEvents.map((event) => (
+            <EventCard
+              key={event._id}
+              title={event.title}
+              category={event.category}
+              date={formatEventDate(event.date)}
+              venue={event.venue}
+              ticketsAvailable={event.ticketsAvailable}
+              onBook={() => {
+                if (event.ticketsAvailable > 0) {
+                  setSelectedEvent(event._id);
+                  setBookingMessage('');
+                }
+              }}
+            />
           ))}
-        </select>
-        <label htmlFor="quantity">Quantity</label>
-        <input id="quantity" type="number" min="1" max="10" value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} required />
-        <button className="book-button" type="submit">Continue booking</button>
-        {bookingMessage && <p className="booking-message" role="status">{bookingMessage}</p>}
-      </form>
+        </div>
+      )}
+
+      {!loading && !error && events.some((event) => event.ticketsAvailable > 0) && (
+        <form className="booking-form" onSubmit={handleBooking}>
+          <div>
+            <span className="eyebrow">QUICK BOOKING</span>
+            <h2>Reserve your tickets</h2>
+          </div>
+          <label htmlFor="selected-event">Selected event</label>
+          <select id="selected-event" value={selectedEvent} onChange={(event) => setSelectedEvent(event.target.value)} required>
+            {events.filter((event) => event.ticketsAvailable > 0).map((event) => (
+              <option key={event._id} value={event._id}>{event.title}</option>
+            ))}
+          </select>
+          <label htmlFor="quantity">Quantity</label>
+          <input id="quantity" type="number" min="1" max="10" value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} required />
+          <button className="book-button" type="submit">Continue booking</button>
+          {bookingMessage && <p className="booking-message" role="status">{bookingMessage}</p>}
+        </form>
+      )}
     </section>
   );
 }

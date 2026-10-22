@@ -35,6 +35,11 @@ h1, h2 { font-family: Manrope, sans-serif; letter-spacing: -1.3px; }
 .page-heading h1, .login-intro h1, .empty-state h1 { margin: 10px 0 9px; font-size: clamp(30px, 4vw, 42px); line-height: 1.16; }
 .page-heading p, .login-intro p, .empty-state p { margin-bottom: 0; color: var(--muted); line-height: 1.7; }
 .event-count { padding: 9px 13px; border-radius: 20px; background: #efedff; color: #5749ce; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.event-search-label { display: block; margin: 0 0 8px; font-size: 12px; font-weight: 700; }
+.event-search { width: min(100%, 420px); margin: 0 0 28px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); }
+.event-search:focus { outline: 2px solid #6658e844; border-color: var(--violet); }
+.api-state { padding: 20px; border-radius: 12px; background: #fff; color: var(--muted); }
+.api-error { color: #a63d35; background: #fff1ef; }
 .event-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
 .event-card, .login-card { padding: 24px; background: #fff; border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 8px 25px #2a315008; }
 .event-card-top { display: flex; align-items: center; justify-content: space-between; min-height: 27px; }
