@@ -7,11 +7,28 @@ export default function LoginPage() {
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('attendee');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    signIn(email, role);
-    navigate('/events');
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error?.message || 'Unable to sign in.');
+      signIn(data.attendee, data.token, role);
+      navigate('/events');
+    } catch (loginError) {
+      setError(loginError.message || 'The API is unavailable. Start the backend and try again.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -34,8 +51,9 @@ export default function LoginPage() {
           <option value="organizer">Organizer</option>
           <option value="admin">Admin</option>
         </select>
-        <button className="book-button" type="submit">Continue</button>
-        <p className="form-note">Demo sign-in sets local auth state for this routing exercise.</p>
+        <button className="book-button" type="submit" disabled={loading}>{loading ? 'Signing in…' : 'Continue'}</button>
+        {error && <p className="api-error" role="alert">{error}</p>}
+        <p className="form-note">Use an attendee email registered in the EventHub database.</p>
       </form>
     </section>
   );

@@ -7,9 +7,9 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
   const [role, setRole] = useState(null);
 
-  function signIn(email, selectedRole) {
-    setAttendee({ name: email.split('@')[0], email });
-    setToken('eventhub-demo-token');
+  function signIn(attendeeDetails, authToken, selectedRole) {
+    setAttendee(attendeeDetails);
+    setToken(authToken);
     setRole(selectedRole);
   }
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import EventCard from '../components/EventCard.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 
 const API_URL = 'http://localhost:5000/api/v1/events';
 
@@ -11,6 +12,7 @@ function formatEventDate(date) {
 }
 
 export default function EventsPage() {
+  const { token } = useAuth();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -18,6 +20,7 @@ export default function EventsPage() {
   const [selectedEvent, setSelectedEvent] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [bookingMessage, setBookingMessage] = useState('');
+  const [bookingError, setBookingError] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -50,11 +53,31 @@ export default function EventsPage() {
     event.title.toLowerCase().includes(searchTerm.trim().toLowerCase()),
   );
 
-  function handleBooking(event) {
+  async function handleBooking(event) {
     event.preventDefault();
-    const eventTitle = events.find((item) => item._id === selectedEvent)?.title;
-    if (!eventTitle) return;
-    setBookingMessage(`Your request for ${quantity} ticket(s) to ${eventTitle} is ready.`);
+    setBookingMessage('');
+    setBookingError(false);
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/tickets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ eventId: selectedEvent, quantity }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error?.message || 'Booking failed. Please try again.');
+
+      const eventTitle = events.find((item) => item._id === selectedEvent)?.title;
+      setEvents((currentEvents) => currentEvents.map((item) => (
+        item._id === selectedEvent ? { ...item, ticketsAvailable: data.ticketsRemaining } : item
+      )));
+      setBookingMessage(`${quantity} ticket(s) booked for ${eventTitle}. Find them in My Tickets.`);
+    } catch (requestError) {
+      setBookingError(true);
+      setBookingMessage(requestError.message || 'Booking failed. Please try again.');
+    }
   }
 
   return (
@@ -119,7 +142,7 @@ export default function EventsPage() {
           <label htmlFor="quantity">Quantity</label>
           <input id="quantity" type="number" min="1" max="10" value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} required />
           <button className="book-button" type="submit">Continue booking</button>
-          {bookingMessage && <p className="booking-message" role="status">{bookingMessage}</p>}
+          {bookingMessage && <p className={bookingError ? 'booking-message api-error' : 'booking-message'} role={bookingError ? 'alert' : 'status'}>{bookingMessage}</p>}
         </form>
       )}
     </section>

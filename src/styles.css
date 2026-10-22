@@ -69,6 +69,14 @@ h1, h2 { font-family: Manrope, sans-serif; letter-spacing: -1.3px; }
 .booking-form label { font-size: 12px; font-weight: 700; }
 .booking-form .book-button { margin-top: 5px; }
 .booking-message { margin: 0; color: #34795b; font-size: 13px; }
+.ticket-list { display: grid; gap: 16px; }
+.ticket-card { padding: 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.ticket-card h2 { margin: 15px 0 6px; font-size: 19px; }
+.ticket-card p { margin: 5px 0; color: var(--muted); font-size: 13px; }
+.ticket-meta { display: grid; gap: 10px; justify-items: end; text-transform: capitalize; }
+.ticket-status { padding: 6px 11px; border-radius: 20px; background: #eaf7f0; color: #34795b; font-size: 12px; font-weight: 700; }
+.status-used { background: #efedff; color: #5749ce; }
+.status-cancelled { background: #fff0ed; color: #bd5445; }
 .organizer-summary { max-width: 520px; margin-top: 28px; padding: 24px; display: grid; gap: 10px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
 .organizer-summary span { color: var(--muted); font-size: 14px; line-height: 1.6; }
 .empty-state { min-height: 430px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
@@ -76,4 +84,4 @@ h1, h2 { font-family: Manrope, sans-serif; letter-spacing: -1.3px; }
 .ticket-icon { width: 54px; height: 54px; margin-bottom: 22px; display: grid; place-items: center; border-radius: 18px; background: #efedff; color: var(--violet); font-size: 25px; }
 footer { padding: 23px; border-top: 1px solid var(--line); color: #8790a2; font-size: 12px; text-align: center; }
 @media (max-width: 760px) { .event-grid { grid-template-columns: 1fr 1fr; } .login-layout { grid-template-columns: 1fr; gap: 35px; padding: 35px 0; } }
-@media (max-width: 520px) { .site-header { height: auto; min-height: 68px; padding: 12px 20px; flex-wrap: wrap; gap: 12px; } nav { gap: 13px; font-size: 12px; flex-wrap: wrap; } .nav-login { padding: 8px 11px; } .event-grid { grid-template-columns: 1fr; } .page-heading { align-items: start; flex-direction: column; } .page-content { margin-top: 45px; } .booking-form { grid-template-columns: 1fr; } .booking-form > * { grid-column: 1 / -1; } }
+@media (max-width: 520px) { .site-header { height: auto; min-height: 68px; padding: 12px 20px; flex-wrap: wrap; gap: 12px; } nav { gap: 13px; font-size: 12px; flex-wrap: wrap; } .nav-login { padding: 8px 11px; } .event-grid { grid-template-columns: 1fr; } .page-heading { align-items: start; flex-direction: column; } .page-content { margin-top: 45px; } .booking-form { grid-template-columns: 1fr; } .booking-form > * { grid-column: 1 / -1; } .ticket-card { align-items: start; flex-direction: column; } .ticket-meta { justify-items: start; } }
