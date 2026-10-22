@@ -1,4 +1,4 @@
-export default function EventCard({ title, category, date, venue, ticketsAvailable }) {
+export default function EventCard({ title, category, date, venue, ticketsAvailable, onBook }) {
   const isSoldOut = ticketsAvailable === 0;
 
   return (
@@ -15,7 +15,7 @@ export default function EventCard({ title, category, date, venue, ticketsAvailab
       </dl>
       {isSoldOut
         ? <span className="unavailable-label">No tickets available</span>
-        : <button className="book-button" type="button">Book</button>}
+        : <button className="book-button" type="button" onClick={onBook}>Book</button>}
     </article>
   );
 }
